@@ -5,7 +5,7 @@
 
 ---
 
-## 1. Complaint Filing Flow (`📝` Citizen Tab)
+## 1. Complaint Filing Flow (Citizen Tab)
 
 ### 1.1 Valid Complaint Submission
 - **Action:** Select category `pothole`, enter locality `Main Market Road`, description `Large pothole near State Bank ATM`, leave name and phone blank. Click **Send complaint**.
@@ -49,7 +49,7 @@
 
 ---
 
-## 2. Tracking ID Lookup (`🔍` Citizen Tab)
+## 2. Tracking ID Lookup (Citizen Tab)
 
 ### 2.1 Valid Tracking ID Lookup
 - **Action:** Copy a generated tracking ID (e.g. `CT-261008-XXXX`), switch to the **Check status** tab, paste the ID, and click **Check status**.
@@ -64,7 +64,7 @@
 
 ---
 
-## 3. Admin Authentication & Management (`🔧` Admin Page)
+## 3. Admin Authentication & Management (Admin Page)
 
 ### 3.1 Incorrect Admin Password
 - **Action:** Go to the Admin page from the sidebar. Enter a wrong password and click **Log in**.
@@ -123,7 +123,7 @@
 
 ---
 
-## 6. Public Accountability Dashboard (`📊` Dashboard Page)
+## 6. Public Accountability Dashboard (Dashboard Page)
 
 ### 6.1 Performance Metrics
 - **Action:** Open the **Dashboard** page in the sidebar.
@@ -131,7 +131,7 @@
 - **Status:** [ ] Pass / [ ] Fail
 
 ### 6.2 Timestamp & Plain-Language Explainer
-- **Action:** Check the header area and expand the `"ℹ️ Understanding these numbers"` box.
+- **Action:** Check the header area and expand the `"Understanding these numbers"` box.
 - **Expected Result:** A live `"Updated at: ... UTC"` timestamp is displayed along with a friendly paragraph explaining what Open, Resolved, and Overdue mean.
 - **Status:** [ ] Pass / [ ] Fail
 

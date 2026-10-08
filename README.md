@@ -180,10 +180,10 @@ git push origin main
 
 ### Step 4: What to verify after first deploy
 Once the build completes and the app loads:
-- [ ] **Public Dashboard (`📊`):** Confirm summary KPIs, department table, and charts load with live data.
-- [ ] **Citizen Complaint (`📝`):** Submit a test complaint with an optional photo. Confirm you receive a valid tracking ID (`CT-YYMMDD-XXXX`).
-- [ ] **Status Lookup (`🔍`):** Look up your new tracking ID. Verify that status chip, category, due date, and timeline appear, and that reporter name and phone are hidden.
-- [ ] **Admin Portal (`🔧`):** Log in with your `ADMIN_PASSWORD`. Verify the complaint appears in the table, test moving it to `Assigned`, and verify the note updates in the timeline.
+- [ ] **Public Dashboard:** Confirm summary KPIs, department table, and charts load with live data.
+- [ ] **Citizen Complaint:** Submit a test complaint with an optional photo. Confirm you receive a valid tracking ID (`CT-YYMMDD-XXXX`).
+- [ ] **Status Lookup:** Look up your new tracking ID. Verify that status chip, category, due date, and timeline appear, and that reporter name and phone are hidden.
+- [ ] **Admin Portal:** Log in with your `ADMIN_PASSWORD`. Verify the complaint appears in the table, test moving it to `Assigned`, and verify the note updates in the timeline.
 - [ ] **Mobile Layout:** Open the deployed URL on your smartphone browser to confirm single-column responsiveness.
 
 

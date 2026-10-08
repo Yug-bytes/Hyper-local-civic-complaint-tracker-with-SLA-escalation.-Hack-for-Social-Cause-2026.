@@ -2,6 +2,7 @@
 
 Protected by admin password authentication using hmac.compare_digest.
 Session state gatekeeper: st.session_state['is_admin'].
+Zero emojis, production-grade civic-tech SaaS UI with clean badges and Plotly charts.
 """
 
 import hmac
@@ -17,7 +18,6 @@ from constants import (
     ALLOWED_STATUS_TRANSITIONS,
     CATEGORIES,
     COLOR_CIVIC,
-    COLOR_OVERDUE,
     MAX_NOTE_LENGTH,
     STATUS_COLORS,
     Status,
@@ -25,6 +25,52 @@ from constants import (
 from errors import NotFoundError, StorageError, ValidationError
 from services import metrics
 from strings import CATEGORY_STRING_KEYS, STATUS_STRING_KEYS, t
+
+# ──────────────────────────────────────────────────────────────
+# Visual Helpers (Safe HTML)
+# ──────────────────────────────────────────────────────────────
+
+
+def _status_badge_html(status: str) -> str:
+    """Generate safe status badge HTML with dot indicator."""
+    badge_class = f"badge-{status}"
+    label = t(STATUS_STRING_KEYS.get(status, status))
+    return (
+        f'<span class="status-badge {badge_class}">'
+        f'<span class="dot"></span>{label}'
+        f"</span>"
+    )
+
+
+def _escalation_badge_html(level: int) -> str:
+    """Generate safe escalation badge HTML using danger alert styling."""
+    if level == 1:
+        label = t("admin_escalation_level_1")
+    elif level == 2:
+        label = t("admin_escalation_level_2")
+    else:
+        return ""
+    return (
+        f'<span class="status-badge badge-overdue">'
+        f'<span class="dot"></span>{label}'
+        f"</span>"
+    )
+
+
+def _format_datetime(iso_str: str | None) -> str:
+    """Format an ISO datetime string for admin display."""
+    if not iso_str:
+        return "—"
+    try:
+        dt = datetime.fromisoformat(str(iso_str))
+        return dt.strftime("%d %b %Y, %I:%M %p")
+    except (ValueError, TypeError):
+        return str(iso_str)
+
+
+# ──────────────────────────────────────────────────────────────
+# Authentication
+# ──────────────────────────────────────────────────────────────
 
 
 def _check_password(password_input: str) -> bool:
@@ -42,12 +88,32 @@ def _check_password(password_input: str) -> bool:
 
 
 def _render_login_form() -> None:
-    """Render the admin password prompt."""
-    st.header(t("admin_title"))
+    """Render the clean admin authentication card."""
+    st.markdown(
+        f"""
+        <div class="login-container">
+            <div class="login-icon-box">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+            </div>
+            <div class="login-title">{t("admin_title")}</div>
+            <div class="login-subtitle">
+                Enter municipal credentials to access administrative controls.
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
     with st.form("admin_login_form"):
         password_input = st.text_input(
             t("admin_login_prompt"),
             type="password",
+            placeholder="••••••••••••",
         )
         submitted = st.form_submit_button(
             t("admin_login_btn"), type="primary", use_container_width=True
@@ -61,36 +127,9 @@ def _render_login_form() -> None:
             st.error(t("admin_password_error"))
 
 
-def _format_datetime(iso_str: str | None) -> str:
-    """Format an ISO datetime string for admin display."""
-    if not iso_str:
-        return "—"
-    try:
-        dt = datetime.fromisoformat(str(iso_str))
-        return dt.strftime("%d %b %Y, %I:%M %p")
-    except (ValueError, TypeError):
-        return str(iso_str)
-
-
-def _status_badge_html(status: str) -> str:
-    """Generate safe status chip HTML using fixed color tokens."""
-    color = STATUS_COLORS.get(status, "#6B7785")
-    label = t(STATUS_STRING_KEYS.get(status, status))
-    return f'<span class="status-chip" style="background-color:{color}">{label}</span>'
-
-
-def _escalation_badge_html(level: int) -> str:
-    """Generate safe escalation badge HTML using overdue color token."""
-    if level == 1:
-        label = t("admin_escalation_level_1")
-    elif level == 2:
-        label = t("admin_escalation_level_2")
-    else:
-        return ""
-    return (
-        f'<span class="status-chip" '
-        f'style="background-color:{COLOR_OVERDUE}">{label}</span>'
-    )
+# ──────────────────────────────────────────────────────────────
+# Admin Summary & Detail Components
+# ──────────────────────────────────────────────────────────────
 
 
 def _render_summary_metrics(complaints: list[dict[str, Any]]) -> None:
@@ -101,13 +140,14 @@ def _render_summary_metrics(complaints: list[dict[str, Any]]) -> None:
     avg_hours = metrics.avg_resolution_hours(complaints)
 
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric(t("admin_total_complaints"), total)
-    col2.metric(t("admin_overdue_count"), overdue)
-    col3.metric(t("status_resolved"), resolved)
-    col4.metric(
-        t("admin_avg_resolution"),
-        f"{avg_hours} {t('admin_hours')}",
-    )
+    with col1:
+        st.metric(t("admin_total_complaints"), total)
+    with col2:
+        st.metric(t("admin_overdue_count"), overdue)
+    with col3:
+        st.metric(t("status_resolved"), resolved)
+    with col4:
+        st.metric(t("admin_avg_resolution"), f"{avg_hours} {t('admin_hours')}")
 
 
 def _render_status_update_form(complaint: dict[str, Any]) -> None:
@@ -119,21 +159,36 @@ def _render_status_update_form(complaint: dict[str, Any]) -> None:
         st.info(t("admin_already_resolved"))
         return
 
-    st.subheader(t("admin_update_status"))
     next_label = t(STATUS_STRING_KEYS.get(allowed_next, allowed_next))
-    st.markdown(f"**{t('admin_next_status')}:** `{next_label}`")
+
+    st.markdown(
+        f"""
+        <div class="action-card">
+            <div class="action-card-header">
+                <div class="action-card-title">{t("admin_update_status")}</div>
+                <div class="action-card-next">
+                    <span>{t("admin_next_status")}: </span>
+                    <strong>{next_label}</strong>
+                </div>
+            </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     with st.form("status_update_form"):
         note = st.text_area(
             t("admin_status_note"),
             max_chars=MAX_NOTE_LENGTH,
-            placeholder="e.g. Assigned to Sanitary Inspector Sharma",
+            placeholder="e.g. Assigned to Sanitary Inspector Sharma (Ward 14)",
+            label_visibility="visible",
         )
         submit_update = st.form_submit_button(
-            t("admin_update_status"),
+            f"{t('admin_update_status')} → {next_label}",
             type="primary",
             use_container_width=True,
         )
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
     if submit_update:
         try:
@@ -150,71 +205,141 @@ def _render_status_update_form(complaint: dict[str, Any]) -> None:
 
 def _render_complaint_detail(complaint: dict[str, Any]) -> None:
     """Render details, reporter info, photo, and history for a complaint."""
-    st.divider()
-    st.subheader(f"Complaint: {complaint['tracking_id']}")
+    st.markdown('<div class="divider-line"></div>', unsafe_allow_html=True)
 
-    # Status chips
     badges = _status_badge_html(complaint["status"])
     esc_level = complaint.get("escalation_level", 0)
     if esc_level > 0:
         badges += " " + _escalation_badge_html(esc_level)
-    st.markdown(badges, unsafe_allow_html=True)
 
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown(f"**{t('category')}:**")
-        cat_key = CATEGORY_STRING_KEYS.get(complaint["category"], complaint["category"])
-        st.text(t(cat_key))
-        st.markdown(f"**{t('locality')}:**")
-        st.text(complaint.get("locality", "—"))
-        st.markdown(f"**{t('filed_on')}:**")
-        st.text(_format_datetime(complaint.get("created_at")))
-    with col2:
-        st.markdown(f"**{t('due_date')}:**")
-        st.text(_format_datetime(complaint.get("due_at")))
-        if complaint.get("resolved_at"):
-            st.markdown(f"**{t('resolved_on')}:**")
-            st.text(_format_datetime(complaint["resolved_at"]))
+    st.markdown(
+        f"""
+        <div class="status-bar">
+            <div>
+                <div class="status-bar-title">Selected Complaint</div>
+                <div class="status-bar-id">{complaint['tracking_id']}</div>
+            </div>
+            <div>
+                {badges}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
-    # Description (rendered safely as text, not HTML)
-    st.markdown(f"**{t('description')}:**")
+    cat_key = CATEGORY_STRING_KEYS.get(complaint["category"], complaint["category"])
+    cat_label = t(cat_key)
+    locality_label = complaint.get("locality", "—")
+    filed_on_label = _format_datetime(complaint.get("created_at"))
+    due_date_label = _format_datetime(complaint.get("due_at"))
+    resolved_on_label = (
+        _format_datetime(complaint.get("resolved_at"))
+        if complaint.get("resolved_at")
+        else None
+    )
+
+    resolved_html = (
+        f"""
+        <div>
+            <div class="meta-item-label">{t("resolved_on")}</div>
+            <div class="meta-item-value">{resolved_on_label}</div>
+        </div>
+        """
+        if resolved_on_label
+        else ""
+    )
+
+    meta_cols = f"""
+    <div class="meta-grid">
+        <div>
+            <div class="meta-item-label">{t("category")}</div>
+            <div class="meta-item-value">{cat_label}</div>
+        </div>
+        <div>
+            <div class="meta-item-label">{t("locality")}</div>
+            <div class="meta-item-value">{locality_label}</div>
+        </div>
+        <div>
+            <div class="meta-item-label">{t("filed_on")}</div>
+            <div class="meta-item-value">{filed_on_label}</div>
+        </div>
+        <div>
+            <div class="meta-item-label">{t("due_date")}</div>
+            <div class="meta-item-value">{due_date_label}</div>
+        </div>
+        {resolved_html}
+    </div>
+    """
+    st.markdown(meta_cols, unsafe_allow_html=True)
+
+    st.markdown(f"**{t('description')}**")
     st.text(complaint.get("description", ""))
 
-    # Reporter info (private, admin only)
-    st.markdown(f"**{t('admin_reporter_info')}:**")
     name = complaint.get("reporter_name") or "Anonymous"
     phone = complaint.get("reporter_phone") or "Not provided"
-    st.text(f"Name: {name} | Phone: {phone}")
+    st.markdown(
+        f"""
+        <div class="confidential-card">
+            <div class="confidential-title">
+                {t("admin_reporter_info")} (Internal / Privileged)
+            </div>
+            <div class="confidential-body">
+                Name: <strong>{name}</strong> &nbsp;|&nbsp;
+                Phone: <strong>{phone}</strong>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
-    # Photo (if attached)
     if complaint.get("photo_url"):
+        st.markdown(f"**{t('photo')}**")
         st.image(complaint["photo_url"], width=350)
 
-    # Status update controls
     _render_status_update_form(complaint)
 
-    # Status history timeline
-    st.subheader(t("history"))
     full_info = db.get_public_status(complaint["tracking_id"])
     history = full_info.get("history", []) if full_info else []
-    for entry in history:
-        chip = _status_badge_html(entry["status"])
-        timestamp = _format_datetime(entry.get("changed_at"))
-        by_who = entry.get("changed_by", "system")
+    if history:
         st.markdown(
-            f'<div class="timeline-entry">'
-            f'<span class="timestamp">{timestamp} ({by_who})</span> {chip}'
-            f"</div>",
+            f'<div class="section-heading">{t("history")}</div>',
             unsafe_allow_html=True,
         )
-        note = entry.get("note")
-        if note:
-            st.text(f"  {note}")
+
+        st.markdown('<div class="activity-timeline">', unsafe_allow_html=True)
+        for entry in history:
+            chip = _status_badge_html(entry["status"])
+            timestamp = _format_datetime(entry.get("changed_at"))
+            by_who = entry.get("changed_by", "system")
+
+            st.markdown(
+                f"""
+                <div class="activity-item">
+                    <div class="activity-meta">
+                        <span>{timestamp} ({by_who})</span>
+                        {chip}
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            note = entry.get("note")
+            if note:
+                st.text(f"  {note}")
+        st.markdown("</div>", unsafe_allow_html=True)
 
 
 def _render_complaints_tab(all_complaints: list[dict[str, Any]]) -> None:
     """Render the complaints filter list and detailed inspection view."""
-    # Filter controls
+    st.markdown(
+        """
+        <div class="status-bar-title" style="margin-bottom: 8px;">
+            Filter Complaints
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
     col_status, col_cat, col_overdue = st.columns([1, 1, 1])
 
     with col_status:
@@ -242,9 +367,9 @@ def _render_complaints_tab(all_complaints: list[dict[str, Any]]) -> None:
         selected_cat = cat_options[cat_idx] if cat_idx else None
 
     with col_overdue:
+        st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
         overdue_only = st.checkbox(t("admin_filter_overdue"), value=False)
 
-    # Query filtered complaints
     filtered = db.list_complaints(
         status=selected_status,
         category=selected_cat,
@@ -255,7 +380,6 @@ def _render_complaints_tab(all_complaints: list[dict[str, Any]]) -> None:
         st.info(t("admin_no_complaints"))
         return
 
-    # Selection for detailed view
     options = [
         f"{c['tracking_id']} | {c['category']} | {c['status']}"
         + (" [OVERDUE]" if c.get("is_overdue") else "")
@@ -271,13 +395,20 @@ def _render_complaints_tab(all_complaints: list[dict[str, Any]]) -> None:
 
 
 def _render_analytics_tab(complaints: list[dict[str, Any]]) -> None:
-    """Render Plotly charts for categories, statuses, and resolution time."""
+    """Render minimal Plotly charts for categories, statuses, and times."""
     if not complaints:
         st.info(t("admin_no_complaints"))
         return
 
+    chart_font = dict(
+        family="Inter, -apple-system, sans-serif", size=12, color="#475569"
+    )
+
     # 1. Complaints by Category
-    st.subheader("Complaints by Category")
+    st.markdown(
+        '<div class="section-heading">Complaints by Category</div>',
+        unsafe_allow_html=True,
+    )
     cat_counts = metrics.counts_by_category(complaints)
     cat_df_labels = [t(CATEGORY_STRING_KEYS.get(k, k)) for k in cat_counts.keys()]
     fig_cat = px.bar(
@@ -286,33 +417,61 @@ def _render_analytics_tab(complaints: list[dict[str, Any]]) -> None:
         labels={"x": t("category"), "y": "Count"},
         color_discrete_sequence=[COLOR_CIVIC],
     )
-    fig_cat.update_layout(margin=dict(l=20, r=20, t=20, b=20), height=300)
+    fig_cat.update_traces(marker_line_width=0)
+    fig_cat.update_layout(
+        paper_bgcolor="#FFFFFF",
+        plot_bgcolor="#FFFFFF",
+        font=chart_font,
+        xaxis=dict(showgrid=False, linecolor="#E2E8F0"),
+        yaxis=dict(showgrid=True, gridcolor="#F1F5F9", linecolor="#E2E8F0"),
+        margin=dict(l=30, r=20, t=20, b=30),
+        height=300,
+    )
     st.plotly_chart(fig_cat, use_container_width=True)
 
     # 2. Complaints by Status
-    st.subheader("Complaints by Status")
+    st.markdown(
+        '<div class="section-heading">Complaints by Status</div>',
+        unsafe_allow_html=True,
+    )
     status_counts = metrics.counts_by_status(complaints)
     status_labels = [t(STATUS_STRING_KEYS.get(s, s)) for s in status_counts.keys()]
-    colors = [STATUS_COLORS.get(s, "#6B7785") for s in status_counts.keys()]
+    colors = [STATUS_COLORS.get(s, "#64748B") for s in status_counts.keys()]
     fig_status = go.Figure(
         data=[
             go.Bar(
                 x=status_labels,
                 y=list(status_counts.values()),
                 marker_color=colors,
+                marker_line_width=0,
             )
         ]
     )
     fig_status.update_layout(
-        xaxis_title=t("status"),
-        yaxis_title="Count",
-        margin=dict(l=20, r=20, t=20, b=20),
+        paper_bgcolor="#FFFFFF",
+        plot_bgcolor="#FFFFFF",
+        font=chart_font,
+        xaxis=dict(
+            title=dict(text=t("status"), font=chart_font),
+            showgrid=False,
+            linecolor="#E2E8F0",
+        ),
+        yaxis=dict(
+            title=dict(text="Count", font=chart_font),
+            showgrid=True,
+            gridcolor="#F1F5F9",
+            linecolor="#E2E8F0",
+        ),
+        margin=dict(l=30, r=20, t=20, b=30),
         height=300,
     )
     st.plotly_chart(fig_status, use_container_width=True)
 
     # 3. Average Resolution Time per Department
-    st.subheader("Average Resolution Time (Hours)")
+    st.markdown(
+        '<div class="section-heading">Average Resolution Time (Hours)</div>',
+        unsafe_allow_html=True,
+    )
     dept_stats = metrics.per_department_stats(complaints)
     dept_labels = [
         t(CATEGORY_STRING_KEYS.get(d["category"], d["category"])) for d in dept_stats
@@ -324,7 +483,16 @@ def _render_analytics_tab(complaints: list[dict[str, Any]]) -> None:
         labels={"x": t("category"), "y": t("admin_hours")},
         color_discrete_sequence=[COLOR_CIVIC],
     )
-    fig_res.update_layout(margin=dict(l=20, r=20, t=20, b=20), height=300)
+    fig_res.update_traces(marker_line_width=0)
+    fig_res.update_layout(
+        paper_bgcolor="#FFFFFF",
+        plot_bgcolor="#FFFFFF",
+        font=chart_font,
+        xaxis=dict(showgrid=False, linecolor="#E2E8F0"),
+        yaxis=dict(showgrid=True, gridcolor="#F1F5F9", linecolor="#E2E8F0"),
+        margin=dict(l=30, r=20, t=20, b=30),
+        height=300,
+    )
     st.plotly_chart(fig_res, use_container_width=True)
 
 
@@ -335,16 +503,37 @@ def _render_analytics_tab(complaints: list[dict[str, Any]]) -> None:
 if not st.session_state.get("is_admin", False):
     _render_login_form()
 else:
-    # Header with title and logout button
     col_title, col_logout = st.columns([4, 1])
     with col_title:
-        st.header(t("admin_title"))
+        st.markdown(
+            f"""
+            <div class="app-header">
+                <div class="app-header-left">
+                    <div class="app-header-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24"
+                             fill="none" stroke="#2563EB" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="app-header-title">{t("admin_title")}</div>
+                        <div class="app-header-desc">
+                            Municipal grievance administration console.
+                        </div>
+                    </div>
+                </div>
+                <div class="app-header-badge">Admin Session Active</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
     with col_logout:
+        st.markdown("<div style='height: 14px;'></div>", unsafe_allow_html=True)
         if st.button(t("admin_logout_btn"), use_container_width=True):
             st.session_state["is_admin"] = False
             st.rerun()
 
-    # Fetch all complaints to power metrics and tabs
     all_complaints = db.list_complaints()
 
     _render_summary_metrics(all_complaints)
