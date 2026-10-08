@@ -58,13 +58,13 @@ ALLOWED_STATUS_TRANSITIONS: dict[str, str] = {
 
 # Status color tokens from designsystem.md
 STATUS_COLORS: dict[str, str] = {
-    Status.SUBMITTED: "#64748B",
-    Status.ASSIGNED: "#2563EB",
-    Status.IN_PROGRESS: "#D97706",
-    Status.RESOLVED: "#16A34A",
+    Status.SUBMITTED: "#6B7785",
+    Status.ASSIGNED: "#1D5C8A",
+    Status.IN_PROGRESS: "#B87600",
+    Status.RESOLVED: "#2E7D4F",
 }
-COLOR_OVERDUE: str = "#DC2626"
-COLOR_CIVIC: str = "#2563EB"
-COLOR_PAPER: str = "#F8FAFC"
-COLOR_INK: str = "#0F172A"
-COLOR_LINE: str = "#E2E8F0"
+COLOR_OVERDUE: str = "#B3261E"
+COLOR_CIVIC: str = "#1D5C8A"
+COLOR_PAPER: str = "#F6F7F4"
+COLOR_INK: str = "#1E2A32"
+COLOR_LINE: str = "#D5DADD"

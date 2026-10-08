@@ -13,6 +13,7 @@ STRINGS: dict[str, dict[str, str]] = {
         "page_citizen": "Complaint",
         "page_admin": "Admin",
         "page_dashboard": "Dashboard",
+        "app_description": "Hyper-local civic complaint tracker with SLA escalation",
         # ── Complaint form ──
         "file_complaint": "File a complaint",
         "check_status": "Check status",
@@ -80,6 +81,7 @@ STRINGS: dict[str, dict[str, str]] = {
         "admin_escalation_level_2": "Severely Overdue (Level 2)",
         "admin_no_complaints": "No complaints match the selected filters.",
         "admin_total_complaints": "Total complaints",
+        "admin_open_count": "Open",
         "admin_overdue_count": "Overdue",
         "admin_avg_resolution": "Avg resolution time",
         "admin_hours": "hours",
@@ -92,7 +94,12 @@ STRINGS: dict[str, dict[str, str]] = {
             "Transparent tracking of local municipal response times, "
             "resolution rates, and overdue civic issues."
         ),
+        "dashboard_intro": (
+            "How fast does each department resolve complaints in our area?"
+        ),
+        "dashboard_rank": "Rank",
         "dashboard_updated_at": "Updated at",
+        "empty_chart_message": "No complaints recorded yet to analyze.",
         "dashboard_explainer_title": "Understanding these numbers",
         "dashboard_explainer_body": (
             "This public dashboard tracks municipal accountability without "
@@ -113,6 +120,7 @@ STRINGS: dict[str, dict[str, str]] = {
     "hi": {
         # ── App & navigation ──
         "app_title": "नागरिक शिकायत ट्रैकर",
+        "app_description": "SLA समय-सीमा के साथ स्थानीय नागरिक शिकायत ट्रैकर",
         "page_citizen": "शिकायत",
         "page_admin": "प्रशासक",
         "page_dashboard": "डैशबोर्ड",
@@ -174,6 +182,7 @@ STRINGS: dict[str, dict[str, str]] = {
         "admin_escalation_level_2": "गंभीर विलंबित (स्तर 2)",
         "admin_no_complaints": "चयनित फिल्टर से कोई शिकायत मेल नहीं खाती।",
         "admin_total_complaints": "कुल शिकायतें",
+        "admin_open_count": "प्रगति में",
         "admin_overdue_count": "विलंबित",
         "admin_avg_resolution": "औसत समाधान समय",
         "admin_hours": "घंटे",
@@ -186,7 +195,12 @@ STRINGS: dict[str, dict[str, str]] = {
             "स्थानीय नगरपालिका प्रतिक्रिया समय, समाधान दर "
             "और विलंबित समस्याओं का पारदर्शी रिकॉर्ड।"
         ),
+        "dashboard_intro": (
+            "हमारे क्षेत्र में प्रत्येक विभाग कितनी तेजी से शिकायतों का समाधान करता है?"
+        ),
+        "dashboard_rank": "स्थान",
         "dashboard_updated_at": "अंतिम अपडेट",
+        "empty_chart_message": "विश्लेषण के लिए अभी कोई शिकायत दर्ज नहीं है।",
         "dashboard_explainer_title": "इन आंकड़ों को कैसे समझें",
         "dashboard_explainer_body": (
             "यह सार्वजनिक डैशबोर्ड बिना किसी नागरिक का नाम, फोन या निजी विवरण दिखाए "
