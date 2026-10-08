@@ -1,0 +1,42 @@
+[
+  {
+    "category": "pothole",
+    "department_name": "Public Works Department",
+    "responsible_role": "Junior Engineer",
+    "escalation_role": "Executive Engineer",
+    "sla_days": 7,
+    "verify": "VERIFY: Confirm department name, roles, and SLA with your local municipal body"
+  },
+  {
+    "category": "water",
+    "department_name": "Water Supply Department",
+    "responsible_role": "Water Inspector",
+    "escalation_role": "Assistant Engineer (Water)",
+    "sla_days": 3,
+    "verify": "VERIFY: Confirm department name, roles, and SLA with your local municipal body"
+  },
+  {
+    "category": "streetlight",
+    "department_name": "Electrical Department",
+    "responsible_role": "Line Inspector",
+    "escalation_role": "Assistant Engineer (Electrical)",
+    "sla_days": 5,
+    "verify": "VERIFY: Confirm department name, roles, and SLA with your local municipal body"
+  },
+  {
+    "category": "garbage",
+    "department_name": "Sanitation Department",
+    "responsible_role": "Sanitary Inspector",
+    "escalation_role": "Health Officer",
+    "sla_days": 2,
+    "verify": "VERIFY: Confirm department name, roles, and SLA with your local municipal body"
+  },
+  {
+    "category": "other",
+    "department_name": "General Administration",
+    "responsible_role": "Ward Officer",
+    "escalation_role": "Municipal Commissioner",
+    "sla_days": 7,
+    "verify": "VERIFY: Confirm department name, roles, and SLA with your local municipal body"
+  }
+]

@@ -1,0 +1,86 @@
+/* Civic Complaint Tracker – Design System (designsystem.md)
+   Loaded once from app.py. Never inject user text via unsafe_allow_html. */
+
+@import url('https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap');
+
+/* ── Design tokens ───────────────────────────────────── */
+:root {
+    --paper:            #F6F7F4;
+    --ink:              #1E2A32;
+    --civic:            #1D5C8A;
+    --line:             #D5DADD;
+    --status-submitted: #6B7785;
+    --status-assigned:  #1D5C8A;
+    --status-progress:  #B87600;
+    --status-resolved:  #2E7D4F;
+    --status-overdue:   #B3261E;
+}
+
+/* ── Typography ──────────────────────────────────────── */
+html, body, [class*="css"] {
+    font-family: 'Public Sans', 'Noto Sans Devanagari', sans-serif !important;
+    line-height: 1.5;
+}
+
+/* ── Status chip (rendered with known enum values only) ─ */
+.status-chip {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #FFFFFF;
+    margin: 4px 0;
+    letter-spacing: 0.02em;
+}
+
+/* ── Tracking ID hero display ────────────────────────── */
+.tracking-id-box {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--civic);
+    text-align: center;
+    padding: 16px;
+    background: #FFFFFF;
+    border: 2px solid var(--civic);
+    border-radius: 8px;
+    margin: 16px 0;
+}
+
+/* ── Timeline (status history, newest first) ─────────── */
+.timeline-entry {
+    border-left: 3px solid var(--line);
+    padding: 8px 0 8px 16px;
+    margin-left: 8px;
+    margin-bottom: 4px;
+}
+
+.timeline-entry .timestamp {
+    font-size: 14px;
+    color: #6B7785;
+}
+
+.timeline-entry .note {
+    font-size: 14px;
+    color: var(--ink);
+    margin-top: 2px;
+}
+
+/* ── Consent / helper text ───────────────────────────── */
+.consent-text {
+    font-size: 14px;
+    color: #6B7785;
+    font-style: italic;
+    margin-bottom: 8px;
+}
+
+/* ── Phone-first responsive tweaks ───────────────────── */
+@media (max-width: 480px) {
+    .stApp {
+        padding: 0 4px;
+    }
+    .tracking-id-box {
+        font-size: 22px;
+        padding: 12px;
+    }
+}
