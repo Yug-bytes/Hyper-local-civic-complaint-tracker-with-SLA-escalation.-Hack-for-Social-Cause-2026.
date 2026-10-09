@@ -141,7 +141,24 @@ Populate the database with 25 sample complaints across departments and statuses:
 python scripts/seed.py --confirm
 ```
 
-### Step 6: Run the application
+### Step 6: Run the applications
+
+#### Option A: Modern Web Frontend (React + FastAPI)
+1. **Start the FastAPI Backend:**
+   ```bash
+   python -m uvicorn api.main:app --host 127.0.0.1 --port 8000 --reload
+   ```
+   Interactive Swagger docs are available at `http://127.0.0.1:8000/docs`.
+
+2. **Start the React Frontend:**
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+   Open `http://localhost:5173` in your browser.
+
+#### Option B: Streamlit Application (Dual Coexistence)
 ```bash
 streamlit run app.py
 ```

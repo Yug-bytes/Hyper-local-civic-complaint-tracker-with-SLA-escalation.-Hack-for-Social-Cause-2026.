@@ -18,3 +18,11 @@ class StorageError(Exception):
 
 class AuthError(Exception):
     """Raised when admin authentication fails."""
+
+
+class ConfigurationError(Exception):
+    """Raised when required configuration or secrets are missing."""
+
+
+class RateLimitError(Exception):
+    """Raised when complaint submission or login rate limit is exceeded."""

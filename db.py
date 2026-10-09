@@ -14,6 +14,7 @@ from typing import Any
 
 import streamlit as st
 
+from config import get_settings
 from constants import (
     ALLOWED_PHOTO_TYPES,
     ALLOWED_STATUS_TRANSITIONS,
@@ -25,7 +26,6 @@ from constants import (
     MAX_PHOTO_BYTES,
     MAX_PHOTO_MB,
     PHONE_LENGTH,
-    PHOTO_BUCKET,
     Status,
 )
 from errors import AuthError, NotFoundError, StorageError, ValidationError
@@ -43,44 +43,36 @@ _PUBLIC_COLUMNS: str = (
 # Supabase client (service role key, bypasses RLS)
 # ──────────────────────────────────────────────────────────────
 
+_CLIENT_INSTANCE: Client | None = None
+
+
+def set_client(client: Client | None) -> None:
+    """Inject a custom or mock Supabase client (useful for tests)."""
+    global _CLIENT_INSTANCE
+    _CLIENT_INSTANCE = client
+
 
 def _get_supabase_credentials() -> tuple[str, str]:
-    """Retrieve Supabase URL and service role key from flat or nested st.secrets."""
-    url = st.secrets.get("SUPABASE_URL")
-    key = st.secrets.get("SUPABASE_SERVICE_ROLE_KEY")
-
-    if "supabase" in st.secrets:
-        sb = st.secrets["supabase"]
-        if not url:
-            url = sb.get("url")
-        if not key:
-            key = sb.get("service_key") or sb.get("service_role_key") or sb.get("key")
-
-    if not url or not key:
-        raise ValidationError("Supabase credentials missing in secrets.toml.")
-
-    url_str = str(url).strip()
-    if url_str.endswith("/rest/v1/"):
-        url_str = url_str[:-9]
-    elif url_str.endswith("/rest/v1"):
-        url_str = url_str[:-8]
-    url_str = url_str.rstrip("/")
-
-    return url_str, str(key).strip()
+    """Retrieve Supabase URL and service role key from configuration."""
+    settings = get_settings()
+    settings.validate_required()
+    return settings.supabase_url, settings.supabase_service_role_key
 
 
 def _get_photo_bucket() -> str:
-    """Get photo bucket name from secrets or fallback to default."""
-    if "supabase" in st.secrets and "bucket" in st.secrets["supabase"]:
-        return str(st.secrets["supabase"]["bucket"]).strip()
-    return st.secrets.get("PHOTO_BUCKET", PHOTO_BUCKET)
+    """Get photo bucket name from configuration."""
+    return get_settings().photo_bucket
 
 
-@st.cache_resource
 def _get_client() -> Client:
     """Create and cache the Supabase client using the service role key."""
+    global _CLIENT_INSTANCE
+    if _CLIENT_INSTANCE is not None:
+        return _CLIENT_INSTANCE
+
     url, key = _get_supabase_credentials()
-    return create_client(url, key)
+    _CLIENT_INSTANCE = create_client(url, key)
+    return _CLIENT_INSTANCE
 
 
 # ──────────────────────────────────────────────────────────────
@@ -150,6 +142,40 @@ def _upload_photo(client: Client, photo_bytes: bytes, content_type: str) -> str:
         return client.storage.from_(bucket).get_public_url(filename)
     except Exception as exc:
         raise StorageError("Photo upload failed.") from exc
+
+
+def get_signed_photo_url(path_or_url: str | None, expires_in: int = 900) -> str | None:
+    """Generate a temporary signed URL (default 15 minutes) for a stored photo.
+
+    Returns None if path_or_url is empty.
+    Gracefully falls back to original path_or_url if signing fails or in offline tests.
+    """
+    if not path_or_url:
+        return None
+
+    raw = path_or_url.strip()
+    bucket = _get_photo_bucket()
+    if f"/{bucket}/" in raw:
+        path = raw.split(f"/{bucket}/")[-1].split("?")[0]
+    elif "/" in raw and (raw.startswith("http://") or raw.startswith("https://")):
+        path = raw.split("/")[-1].split("?")[0]
+    else:
+        path = raw.split("?")[0]
+
+    try:
+        client = _get_client()
+        res = client.storage.from_(bucket).create_signed_url(
+            path, expires_in=expires_in
+        )
+        if isinstance(res, dict):
+            return res.get("signedURL") or res.get("signed_url") or raw
+        elif hasattr(res, "signed_url"):
+            return getattr(res, "signed_url") or raw
+        elif hasattr(res, "get"):
+            return res.get("signedURL") or res.get("signed_url") or raw
+        return str(res)
+    except Exception:
+        return raw
 
 
 # ──────────────────────────────────────────────────────────────
@@ -310,6 +336,9 @@ def get_public_status(tracking_id: str) -> dict[str, Any] | None:
         except Exception:
             complaint["history"] = []
 
+        if complaint.get("photo_url"):
+            complaint["photo_url"] = get_signed_photo_url(complaint["photo_url"])
+
         return complaint
     except Exception:
         return None
@@ -336,13 +365,21 @@ def list_complaints(
     status: str | None = None,
     category: str | None = None,
     overdue_only: bool = False,
+    is_admin: bool | None = None,
 ) -> list[dict[str, Any]]:
     """List complaints for admin with optional filters.
 
-    Requires admin authentication (st.session_state['is_admin']).
+    Requires admin authentication (is_admin=True or st.session_state['is_admin']).
     Returns all fields including reporter_name and reporter_phone.
     """
-    if not st.session_state.get("is_admin", False):
+    admin_ok = is_admin if is_admin is not None else False
+    if is_admin is None:
+        try:
+            admin_ok = bool(st.session_state.get("is_admin", False))
+        except Exception:
+            admin_ok = False
+
+    if not admin_ok:
         raise AuthError("Admin authentication required.")
 
     complaints: list[dict[str, Any]] = []
@@ -364,6 +401,8 @@ def list_complaints(
     for c in complaints:
         c["escalation_level"] = escalation.escalation_level(c, now)
         c["is_overdue"] = c["escalation_level"] > 0
+        if c.get("photo_url"):
+            c["photo_url"] = get_signed_photo_url(c["photo_url"])
 
     if overdue_only:
         complaints = [c for c in complaints if c["is_overdue"]]
@@ -372,7 +411,10 @@ def list_complaints(
 
 
 def update_status(
-    tracking_id: str, new_status: str, note: str | None = None
+    tracking_id: str,
+    new_status: str,
+    note: str | None = None,
+    is_admin: bool | None = None,
 ) -> dict[str, Any]:
     """Admin status change: validates progression, writes history, sets resolved_at.
 
@@ -380,7 +422,14 @@ def update_status(
     Only allows forward progression:
     submitted -> assigned -> in_progress -> resolved
     """
-    if not st.session_state.get("is_admin", False):
+    admin_ok = is_admin if is_admin is not None else False
+    if is_admin is None:
+        try:
+            admin_ok = bool(st.session_state.get("is_admin", False))
+        except Exception:
+            admin_ok = False
+
+    if not admin_ok:
         raise AuthError("Admin authentication required.")
 
     tracking_id = tracking_id.strip().upper()
@@ -446,6 +495,85 @@ def update_status(
                 "complaint_id": complaint["id"],
                 "status": new_status,
                 "note": clean_note,
+                "changed_by": "admin",
+                "changed_at": now.isoformat(),
+            }
+        ).execute()
+    except Exception:
+        pass
+
+    return update_result.data[0]
+
+
+def unlink_photo(tracking_id: str, is_admin: bool | None = None) -> dict[str, Any]:
+    """Admin action: removes photo_url from complaint and logs to status_history."""
+    admin_ok = is_admin if is_admin is not None else False
+    if is_admin is None:
+        try:
+            admin_ok = bool(st.session_state.get("is_admin", False))
+        except Exception:
+            admin_ok = False
+
+    if not admin_ok:
+        raise AuthError("Admin authentication required.")
+
+    tracking_id = tracking_id.strip().upper()
+    try:
+        client = _get_client()
+        fetch_result = (
+            client.table("complaints")
+            .select("*")
+            .eq("tracking_id", tracking_id)
+            .execute()
+        )
+    except Exception as exc:
+        raise StorageError(
+            "Service temporarily unavailable. Unable to retrieve complaint."
+        ) from exc
+
+    if not fetch_result.data:
+        raise NotFoundError("We couldn't find that ID. Check it and try again.")
+
+    complaint = fetch_result.data[0]
+    old_photo_url = complaint.get("photo_url")
+
+    if old_photo_url:
+        bucket = _get_photo_bucket()
+        raw = old_photo_url.strip()
+        if f"/{bucket}/" in raw:
+            path = raw.split(f"/{bucket}/")[-1].split("?")[0]
+        elif "/" in raw and (raw.startswith("http://") or raw.startswith("https://")):
+            path = raw.split("/")[-1].split("?")[0]
+        else:
+            path = raw.split("?")[0]
+        try:
+            client.storage.from_(bucket).remove([path])
+        except Exception:
+            pass
+
+    now = datetime.now(timezone.utc)
+    try:
+        update_result = (
+            client.table("complaints")
+            .update({"photo_url": None})
+            .eq("id", complaint["id"])
+            .execute()
+        )
+        if not update_result.data:
+            raise StorageError("Failed to remove photo.")
+    except StorageError:
+        raise
+    except Exception as exc:
+        raise StorageError(
+            "Service temporarily unavailable. Unable to remove photo."
+        ) from exc
+
+    try:
+        client.table("status_history").insert(
+            {
+                "complaint_id": complaint["id"],
+                "status": complaint["status"],
+                "note": "Photo removed by administrator",
                 "changed_by": "admin",
                 "changed_at": now.isoformat(),
             }
