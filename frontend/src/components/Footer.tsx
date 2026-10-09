@@ -1,6 +1,6 @@
 import React from 'react'
 import { Shield } from 'lucide-react'
-import { useI18n } from '@/lib/i18n'
+import { useI18n } from '../lib/i18n'
 
 export const Footer: React.FC = () => {
   const { t } = useI18n()

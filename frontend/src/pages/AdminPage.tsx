@@ -19,12 +19,18 @@ import {
   Tag,
   CheckCircle2,
 } from 'lucide-react'
-import { useI18n, CATEGORY_STRING_KEYS, STATUS_STRING_KEYS } from '@/lib/i18n'
-import { api, type ComplaintAdmin, type StatusHistory, type AdminMetricsSummary } from '@/lib/api'
-import { formatDateTime } from '@/lib/date'
-import { StatusBadge } from '@/components/ui/StatusBadge'
-import { EscalationBadge } from '@/components/ui/EscalationBadge'
-import { Button } from '@/components/ui/Button'
+import { useI18n, CATEGORY_STRING_KEYS, STATUS_STRING_KEYS } from '../lib/i18n'
+import {
+  api,
+  type ComplaintAdmin,
+  type StatusHistory,
+  type AdminMetricsSummary,
+  type DepartmentMetric,
+} from '../lib/api'
+import { formatDateTime } from '../lib/date'
+import { StatusBadge } from '../components/ui/StatusBadge'
+import { EscalationBadge } from '../components/ui/EscalationBadge'
+import { Button } from '../components/ui/Button'
 
 const ALLOWED_NEXT_STATUS: Record<string, string> = {
   submitted: 'assigned',
@@ -109,7 +115,7 @@ export const AdminPage: React.FC = () => {
 
       // Keep selection or auto-select first if none selected
       if (complaintsData.length > 0) {
-        if (!selectedComplaintId || !complaintsData.find(c => c.tracking_id === selectedComplaintId)) {
+        if (!selectedComplaintId || !complaintsData.find((c: ComplaintAdmin) => c.tracking_id === selectedComplaintId)) {
           setSelectedComplaintId(complaintsData[0].tracking_id)
         }
       } else {
@@ -959,12 +965,12 @@ export const AdminPage: React.FC = () => {
           {/* Average Resolution Time by Department */}
           <div className="bg-white p-5 rounded-xl border border-line shadow-xs space-y-4">
             <h3 className="font-bold text-sm text-ink">Average Resolution Time per Department</h3>
-            {metrics?.departments && metrics.departments.some(d => d.resolved > 0) ? (
+            {metrics?.departments && metrics.departments.some((d: DepartmentMetric) => d.resolved > 0) ? (
               <div className="space-y-3 pt-1">
-                {metrics.departments.map(d => {
+                {metrics.departments.map((d: DepartmentMetric) => {
                   const catLabel = t(CATEGORY_STRING_KEYS[d.category] || d.category)
                   const hours = d.avg_resolution_hours || 0
-                  const maxHours = Math.max(...metrics.departments.map(m => m.avg_resolution_hours || 0), 1)
+                  const maxHours = Math.max(...metrics.departments.map((m: DepartmentMetric) => m.avg_resolution_hours || 0), 1)
                   const barWidth = maxHours > 0 ? (hours / maxHours) * 100 : 0
 
                   return (

@@ -15,12 +15,12 @@ import {
   FileText,
   PlusCircle,
 } from 'lucide-react'
-import { useI18n, CATEGORY_STRING_KEYS } from '@/lib/i18n'
-import { api, type ComplaintPublic, type ApiError } from '@/lib/api'
-import { formatDateTime, isPastDeadline } from '@/lib/date'
-import { StatusBadge } from '@/components/ui/StatusBadge'
-import { StatusStepper } from '@/components/StatusStepper'
-import { Button } from '@/components/ui/Button'
+import { useI18n, CATEGORY_STRING_KEYS } from '../lib/i18n'
+import { api, type ComplaintPublic, type StatusHistory, type ApiError } from '../lib/api'
+import { formatDateTime, isPastDeadline } from '../lib/date'
+import { StatusBadge } from '../components/ui/StatusBadge'
+import { StatusStepper } from '../components/StatusStepper'
+import { Button } from '../components/ui/Button'
 
 export const TrackPage: React.FC = () => {
   const { t } = useI18n()
@@ -296,7 +296,7 @@ export const TrackPage: React.FC = () => {
               </h3>
 
               <div className="space-y-4 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-line pl-6">
-                {complaint.history.map((entry, idx) => (
+                {complaint.history.map((entry: StatusHistory, idx: number) => (
                   <div key={idx} className="relative space-y-1">
                     {/* Timeline bullet */}
                     <div className="absolute -left-6 top-1.5 w-2.5 h-2.5 rounded-full bg-civic border-2 border-white shadow-xs" />

@@ -15,10 +15,10 @@ import {
   User,
   Phone,
 } from 'lucide-react'
-import { useI18n, CATEGORY_STRING_KEYS } from '@/lib/i18n'
-import { api, type Department, type ApiError } from '@/lib/api'
-import { Button } from '@/components/ui/Button'
-import { PhotoDropzone } from '@/components/PhotoDropzone'
+import { useI18n, CATEGORY_STRING_KEYS } from '../lib/i18n'
+import { api, type Department, type ApiError } from '../lib/api'
+import { Button } from '../components/ui/Button'
+import { PhotoDropzone } from '../components/PhotoDropzone'
 
 export const CitizenPage: React.FC = () => {
   const { t } = useI18n()
@@ -43,7 +43,7 @@ export const CitizenPage: React.FC = () => {
   useEffect(() => {
     api
       .getDepartments()
-      .then((data) => setDepartments(data))
+      .then((data: Department[]) => setDepartments(data))
       .catch(() => {
         // Fallback default departments if API unavailable
       })

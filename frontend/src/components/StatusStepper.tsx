@@ -1,7 +1,7 @@
 import React from 'react'
 import { Check, Clock, PlayCircle, Send, CheckCircle2 } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { useI18n, STATUS_STRING_KEYS } from '@/lib/i18n'
+import { cn } from '../lib/utils'
+import { useI18n, STATUS_STRING_KEYS } from '../lib/i18n'
 
 interface StatusStepperProps {
   currentStatus: string

@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Building2, Globe, Menu, X, ShieldCheck, BarChart3, PlusCircle, Search } from 'lucide-react'
-import { useI18n } from '@/lib/i18n'
-import { cn } from '@/lib/utils'
+import { useI18n } from '../lib/i18n'
+import { cn } from '../lib/utils'
 
 export const Header: React.FC = () => {
   const { language, setLanguage, t } = useI18n()

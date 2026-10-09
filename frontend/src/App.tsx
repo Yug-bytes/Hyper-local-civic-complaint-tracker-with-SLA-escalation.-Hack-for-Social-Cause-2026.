@@ -1,11 +1,11 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { I18nProvider } from '@/lib/i18n'
-import { Layout } from '@/components/Layout'
-import { CitizenPage } from '@/pages/CitizenPage'
-import { TrackPage } from '@/pages/TrackPage'
-import { DashboardPage } from '@/pages/DashboardPage'
-import { AdminPage } from '@/pages/AdminPage'
+import { I18nProvider } from './lib/i18n'
+import { Layout } from './components/Layout'
+import { CitizenPage } from './pages/CitizenPage'
+import { TrackPage } from './pages/TrackPage'
+import { DashboardPage } from './pages/DashboardPage'
+import { AdminPage } from './pages/AdminPage'
 
 export const App: React.FC = () => {
   return (

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { BarChart3, HelpCircle, ChevronDown, ChevronUp, RefreshCw, AlertTriangle, CheckCircle2, Clock } from 'lucide-react'
-import { useI18n, CATEGORY_STRING_KEYS } from '@/lib/i18n'
-import { api, type DepartmentMetric } from '@/lib/api'
+import { useI18n, CATEGORY_STRING_KEYS } from '../lib/i18n'
+import { api, type DepartmentMetric } from '../lib/api'
 
 export const DashboardPage: React.FC = () => {
   const { t } = useI18n()
