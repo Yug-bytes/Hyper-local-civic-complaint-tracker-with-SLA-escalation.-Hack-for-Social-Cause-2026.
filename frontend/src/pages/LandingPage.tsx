@@ -136,7 +136,7 @@ export const LandingPage: React.FC = () => {
   return (
     <div className="space-y-16 py-6 sm:py-10">
       {/* ── HERO SECTION ── */}
-      <section className="relative overflow-hidden rounded-3xl bg-linear-to-b from-civic/5 via-white to-gray-50 border border-civic/15 p-6 sm:p-12 lg:p-16 shadow-xs">
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-blue-50/60 via-white to-gray-50 border border-civic/15 p-6 sm:p-12 lg:p-16 shadow-xs">
         <div className="max-w-4xl mx-auto text-center space-y-6">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-civic/10 text-civic text-xs sm:text-sm font-semibold tracking-wide">
@@ -359,12 +359,12 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* ── BOTTOM CTA BANNER ── */}
-      <section className="bg-linear-to-r from-civic to-ink rounded-3xl p-8 sm:p-12 text-white shadow-md flex flex-col md:flex-row items-center justify-between gap-6">
+      <section className="bg-slate-100 border border-slate-200 rounded-3xl p-8 sm:p-12 shadow-xs flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="space-y-2 text-center md:text-left">
-          <h2 className="text-2xl sm:text-3xl font-extrabold">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
             {language === 'en' ? 'Ready to Fix Your Locality?' : 'अपने क्षेत्र को बेहतर बनाने के लिए तैयार हैं?'}
           </h2>
-          <p className="text-white/80 text-sm sm:text-base max-w-xl">
+          <p className="text-slate-600 text-sm sm:text-base max-w-xl">
             {language === 'en'
               ? 'Join thousands of citizens making local governance transparent and accountable.'
               : 'हजारों नागरिकों के साथ जुड़ें और स्थानीय प्रशासन को पारदर्शी और जवाबदेह बनाएं।'}
@@ -373,13 +373,13 @@ export const LandingPage: React.FC = () => {
         <div className="flex items-center gap-3 shrink-0">
           <Link
             to="/file"
-            className="px-6 py-3.5 bg-white text-civic hover:bg-gray-100 font-bold rounded-xl text-sm sm:text-base transition-colors shadow-sm"
+            className="px-6 py-3.5 bg-civic hover:bg-civic-hover text-white font-bold rounded-xl text-sm sm:text-base transition-colors shadow-sm"
           >
             {t('landing_cta_file')}
           </Link>
           <Link
             to="/admin"
-            className="px-5 py-3.5 bg-white/10 hover:bg-white/20 text-white font-medium rounded-xl text-sm sm:text-base transition-colors border border-white/20"
+            className="px-5 py-3.5 bg-white hover:bg-slate-50 text-slate-800 font-semibold rounded-xl text-sm sm:text-base transition-colors border border-slate-300 shadow-2xs"
           >
             {language === 'en' ? 'Officer Portal' : 'अधिकारी पोर्टल'}
           </Link>
