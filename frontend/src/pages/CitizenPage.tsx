@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import {
   CheckCircle2,
   Copy,
@@ -22,10 +22,20 @@ import { PhotoDropzone } from '../components/PhotoDropzone'
 
 export const CitizenPage: React.FC = () => {
   const { t } = useI18n()
+  const [searchParams] = useSearchParams()
 
   // Data states
   const [departments, setDepartments] = useState<Department[]>([])
-  const [selectedCategory, setSelectedCategory] = useState<string>('pothole')
+  const [selectedCategory, setSelectedCategory] = useState<string>(
+    searchParams.get('category') || 'pothole'
+  )
+
+  useEffect(() => {
+    const cat = searchParams.get('category')
+    if (cat) {
+      setSelectedCategory(cat)
+    }
+  }, [searchParams])
   const [description, setDescription] = useState<string>('')
   const [locality, setLocality] = useState<string>('')
   const [photoFile, setPhotoFile] = useState<File | null>(null)
@@ -53,12 +63,12 @@ export const CitizenPage: React.FC = () => {
   useEffect(() => {
     if (cooldownRemaining <= 0) return
     const timer = setInterval(() => {
-      setCooldownRemaining((prev) => (prev > 0 ? prev - 1 : 0))
+      setCooldownRemaining((prev: number) => (prev > 0 ? prev - 1 : 0))
     }, 1000)
     return () => clearInterval(timer)
   }, [cooldownRemaining])
 
-  const selectedDept = departments.find((d) => d.category === selectedCategory)
+  const selectedDept = departments.find((d: Department) => d.category === selectedCategory)
 
   const handleCopyTrackingId = () => {
     if (!submittedTrackingId) return
@@ -260,11 +270,11 @@ export const CitizenPage: React.FC = () => {
           </label>
           <select
             value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedCategory(e.target.value)}
             className="w-full px-3 py-2.5 border border-line rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-civic"
           >
             {departments.length > 0 ? (
-              departments.map((dept) => (
+              departments.map((dept: Department) => (
                 <option key={dept.category} value={dept.category}>
                   {t(CATEGORY_STRING_KEYS[dept.category] || dept.category)} ({dept.department_name})
                 </option>

@@ -10,7 +10,8 @@ export const Header: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const navLinks = [
-    { to: '/', label: t('file_complaint'), icon: <PlusCircle className="w-4 h-4 mr-1.5" /> },
+    { to: '/', label: t('nav_home'), icon: <Building2 className="w-4 h-4 mr-1.5" /> },
+    { to: '/file', label: t('file_complaint'), icon: <PlusCircle className="w-4 h-4 mr-1.5" /> },
     { to: '/track', label: t('check_status'), icon: <Search className="w-4 h-4 mr-1.5" /> },
     { to: '/dashboard', label: t('page_dashboard'), icon: <BarChart3 className="w-4 h-4 mr-1.5" /> },
     { to: '/admin', label: t('page_admin'), icon: <ShieldCheck className="w-4 h-4 mr-1.5" /> },
