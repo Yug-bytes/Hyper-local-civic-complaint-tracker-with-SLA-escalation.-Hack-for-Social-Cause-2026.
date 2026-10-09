@@ -5,8 +5,9 @@
       "root": "frontend",
       "framework": "vite"
     },
-    "app": {
-      "root": ".",
+    "backend": {
+      "root": "./",
+      "framework": "fastapi",
       "entrypoint": "api/main:app"
     }
   },
@@ -14,7 +15,7 @@
     {
       "source": "/api/(.*)",
       "destination": {
-        "service": "app"
+        "service": "backend"
       }
     },
     {
