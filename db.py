@@ -12,7 +12,10 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-import streamlit as st
+try:
+    import streamlit as st
+except ImportError:
+    st = None
 
 from config import get_settings
 from constants import (

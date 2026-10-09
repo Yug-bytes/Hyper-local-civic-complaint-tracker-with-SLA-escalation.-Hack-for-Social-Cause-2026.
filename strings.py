@@ -4,7 +4,10 @@ English is complete. Hindi covers main labels only;
 missing Hindi keys fall back to English via t().
 """
 
-import streamlit as st
+try:
+    import streamlit as st
+except ImportError:
+    st = None
 
 STRINGS: dict[str, dict[str, str]] = {
     "en": {
@@ -241,6 +244,8 @@ def t(key: str) -> str:
 
     Falls back to English, then to the raw key if neither has it.
     """
-    lang: str = st.session_state.get("lang", "en")
+    lang: str = "en"
+    if st is not None and hasattr(st, "session_state"):
+        lang = st.session_state.get("lang", "en")
     translations = STRINGS.get(lang, STRINGS["en"])
     return translations.get(key, STRINGS["en"].get(key, key))
